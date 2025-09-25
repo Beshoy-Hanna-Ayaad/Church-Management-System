@@ -90,7 +90,7 @@ else:
     # --- PAGE DEFINITIONS & NAVIGATION ---
     dashboard_page = st.Page("views/dashboard.py", title="Dashboard", icon="🏠", default=True)
     attendance_analysis_page = st.Page("views/attendance_analysis.py", title="Attendance Analysis", icon="📈")
-    target_analysis_page = st.Page("views\\terget_analysis.py", title="Target Analysis", icon="🎯")
+    target_analysis_page = st.Page("views/terget_analysis.py", title="Target Analysis", icon="🎯")
     student_profile_page = st.Page("views/student_profile.py", title="Student Profile", icon="👤")
     leaderboard_page = st.Page("views/leaderboard.py", title="Leaderboard", icon="🏆")
     risk_analysis_page = st.Page("views/risk_analysis.py", title="Students at Risk", icon="⚠️")
