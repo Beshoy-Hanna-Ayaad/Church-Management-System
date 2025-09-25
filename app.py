@@ -105,11 +105,13 @@ else:
     risk_analysis_page = st.Page("views/risk_analysis.py", title="Students at Risk", icon="⚠️")
     attendance_entry_page = st.Page("views/attendance_entry.py", title="Attendance Entry", icon="📝")
     admin_panel_page = st.Page("views/admin_panel.py", title="Admin Panel", icon="⚙️")
+    opportunity_roster_page = st.Page("views/opportunity_roster.py", title="Opportunity Roster", icon="⚖️")
+
     
     pg = st.navigation({
         "Data Collection": [attendance_entry_page],
         "Data Analysis": [dashboard_page, attendance_analysis_page, target_analysis_page, student_profile_page, leaderboard_page, risk_analysis_page],
-        "Data Management": [admin_panel_page],
+        "Data Management": [admin_panel_page, opportunity_roster_page],
     })
 
     # --- SHARED SIDEBAR CONTENT ---
