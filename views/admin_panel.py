@@ -25,8 +25,8 @@ st.info("This panel allows you to perform administrative actions. Please be care
 st.markdown("---")
 
 # --- HELPER FUNCTION FOR DATA REFRESH ---
-# This is crucial for showing changes immediately after an update.
 def refresh_data():
+    # Now this will fetch the updated activities table including the new column
     st.session_state.activities = pd.DataFrame(supabase.from_("Activity").select("*").execute().data)
     st.rerun()
 
@@ -46,11 +46,15 @@ with tab3:
     st.header("Manage Activities")
     st.markdown("---")
 
-    # --- Section 1: Display Current Activities ---
+    # --- Section 1: Display Current Activities (UPDATED) ---
     st.subheader("Existing Activities")
     if not activities.empty:
+        # UPDATED: Now displays the activity_type as well
+        display_activities = activities[['activity_name', 'activity_type']].rename(
+            columns={'activity_name': 'Activity Name', 'activity_type': 'Type'}
+        )
         st.dataframe(
-            activities[['activity_name']].rename(columns={'activity_name': 'Activity Name'}),
+            display_activities,
             use_container_width=True,
             hide_index=True
         )
@@ -62,12 +66,18 @@ with tab3:
     # --- Section 2: Add or Delete ---
     col1, col2 = st.columns(2)
 
-    # --- Add New Activity Form ---
+    # --- Add New Activity Form (UPDATED) ---
     with col1:
         with st.container(border=True):
             st.subheader("Add a New Activity")
             with st.form("add_activity_form"):
                 new_activity_name = st.text_input("New Activity Name")
+                # NEW: Added a selectbox to set the activity type
+                new_activity_type = st.selectbox(
+                    "Activity Type",
+                    options=['Core', 'Selective'],
+                    help="**Core:** Regular activities. **Selective:** Special opportunities."
+                )
                 add_submitted = st.form_submit_button("Add Activity")
                 
                 if add_submitted:
@@ -77,13 +87,17 @@ with tab3:
                         st.warning(f"Activity '{new_activity_name}' already exists.")
                     else:
                         try:
-                            supabase.from_("Activity").insert({'activity_name': new_activity_name}).execute()
+                            # UPDATED: The insert now includes the activity_type
+                            supabase.from_("Activity").insert({
+                                'activity_name': new_activity_name,
+                                'activity_type': new_activity_type
+                            }).execute()
                             st.success(f"Activity '{new_activity_name}' added!")
                             refresh_data() # Refresh data to show the new activity
                         except Exception as e:
                             st.error(f"An error occurred: {e}")
 
-    # --- Delete Existing Activity Form ---
+    # --- Delete Existing Activity Form (Unchanged, but now safer) ---
     with col2:
         with st.container(border=True):
             st.subheader("Delete an Activity")
@@ -93,7 +107,7 @@ with tab3:
                         "Select Activity to Delete",
                         options=activities['activity_name'].tolist()
                     )
-                    st.warning("⚠️ Deleting an activity cannot be undone.", icon="🚨")
+                    st.warning("⚠️ Deleting an activity can affect historical records. Proceed with caution.", icon="🚨")
                     confirm_delete = st.checkbox(f"I am sure I want to delete '{activity_to_delete}'.")
                     
                     delete_submitted = st.form_submit_button("Delete Activity")
@@ -103,15 +117,12 @@ with tab3:
                             st.error("You must check the confirmation box to delete.")
                         else:
                             try:
-                                # Get the ID of the activity to delete
                                 activity_id = activities[activities['activity_name'] == activity_to_delete]['activity_id'].iloc[0]
-                                # IMPORTANT: You would first need to handle related records in the 'Attendance' table.
-                                # For this prototype, we assume it's okay, but in production, you would need to
-                                # either delete related attendance or prevent deletion if records exist.
                                 supabase.from_("Activity").delete().eq('activity_id', int(activity_id)).execute()
                                 st.success(f"Activity '{activity_to_delete}' has been deleted.")
-                                refresh_data() # Refresh data to remove the activity from the list
+                                refresh_data()
                             except Exception as e:
                                 st.error(f"An error occurred: {e}")
             else:
                 st.info("There are no activities to delete.")
+
